@@ -1,6 +1,3 @@
-## Never commit files under the directory of keys
-## Keeps the directory empty
-keys/
 #
 .DS_Store
 
