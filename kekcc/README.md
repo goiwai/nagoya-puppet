@@ -1,11 +1,3 @@
-# そのたもろもろ
-
-- data 配下はパスワードなんかも含むので、空にして別途管理しないとダメだな
-  - それか backend: eyaml にする
-    - <https://blog.hifumi.info/2016/05/24/hiera-eyaml/>
-- firewalld の設定はだいぶ異なりそうなので、検証に持っていって調整が必要
-- local_ca は不要
-
 # kekcc
 
 Welcome to your new module. A short overview of the generated parts can be found
