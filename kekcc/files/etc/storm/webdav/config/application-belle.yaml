@@ -1,0 +1,75 @@
+storm:
+  authz:
+    policies:
+      # belle-tape
+      - sa: belle-tape
+        actions:
+          - all
+        effect: permit
+        description: Grant read/write access to belle VO users
+        principals:
+          - type: vo
+            params:
+              vo: belle
+        # '**' matches any file or directory, at any level of nesting, of a given path
+        # '*' matches any file or directory contained in a given path
+        paths:
+          - /TMP/**
+      - sa: belle-tape
+        actions:
+          - all
+        effect: permit
+        description: Grant read/write access to belle VO users with a role of production/lcgadmin
+        principals:
+          - type: fqan
+            params:
+              fqan: /belle/Role=production/Capability=NULL
+          - type: fqan
+            params:
+              fqan: /belle/Role=lcgadmin/Capability=NULL
+      - sa: belle-tape
+        actions:
+          - list
+          - read
+        effect: permit
+        description: Grant read access to belle VO users
+        principals:
+          - type: vo
+            params:
+              vo: belle
+      # belle-disk
+      - sa: belle-disk
+        actions:
+          - all
+        effect: permit
+        description: Grant read/write access to belle VO users
+        principals:
+          - type: vo
+            params:
+              vo: belle
+        # '**' matches any file or directory, at any level of nesting, of a given path
+        # '*' matches any file or directory contained in a given path
+        paths:
+          - /TMP/**
+      - sa: belle-disk
+        actions:
+          - all
+        effect: permit
+        description: Grant read/write access to belle VO users with a role of production/lcgadmin
+        principals:
+          - type: fqan
+            params:
+              fqan: /belle/Role=production/Capability=NULL
+          - type: fqan
+            params:
+              fqan: /belle/Role=lcgadmin/Capability=NULL
+      - sa: belle-disk
+        actions:
+          - list
+          - read
+        effect: permit
+        description: Grant read access to belle VO users
+        principals:
+          - type: vo
+            params:
+              vo: belle

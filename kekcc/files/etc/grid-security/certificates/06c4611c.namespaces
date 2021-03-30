@@ -1,0 +1,12 @@
+##############################################################################
+#NAMESPACES-VERSION: 1.0
+#
+# @(#)06c4611c.namespaces
+# CA alias    :
+#    subord_of: 
+#    subjectDN: /O=Grid/OU=GlobusTest/OU=simpleCA-grid-misc/CN=Globus Simple CA
+#    hash     : 06c4611c
+#
+TO Issuer "/O=Grid/OU=GlobusTest/OU=simpleCA-grid-misc/CN=Globus Simple CA" \
+  PERMIT Subject "/O=Grid/OU=GlobusTest/OU=simpleCA-grid-misc/.*"
+
