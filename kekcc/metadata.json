@@ -1,0 +1,75 @@
+{
+  "name": "kekcc",
+  "version": "1.0.0",
+  "author": "Go Iwai",
+  "summary": "A collection of manifests for the configuration of Grid services at KEKCC",
+  "license": "Apache-2.0",
+  "source": "https://github.com/goiwai/nagoya-puppet",
+  "project_page": "https://github.com/goiwai/nagoya-puppet",
+  "issues_url": "https://github.com/goiwai/nagoya-puppet/issues",
+  "dependencies": [
+    {
+      "name": "cnafsd/storm",
+      "version_requirement": ">= 3"
+    },
+    {
+      "name": "cnafsd/lcmaps",
+      "version_requirement": ">= 0.1"
+    },
+    {
+      "name": "puppetlabs/mysql",
+      "version_requirement": ">= 10"
+    },
+    {
+      "name": "lcgdm/voms",
+      "version_requirement": ">= 0.3"
+    },
+    {
+      "name": "cnafsd/bdii",
+      "version_requirement": ">= 1"
+    },
+    {
+      "name": "puppet/firewalld",
+      "version_requirement": ">= 4.3"
+    },
+    {
+      "name": "puppet/cron",
+      "version_requirement": ">= 2"
+    },
+    {
+      "name": "puppet/fetchcrl",
+      "version_requirement": ">= 4"
+    },
+    {
+      "name": "puppet/selinux",
+      "version_requirement": ">= 3"
+    },
+    {
+      "name": "puppetlabs/ntp",
+      "version_requirement": ">= 8"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 5.5.0 < 6.0.0"
+    }
+  ],
+  "pdk-version": "1.18.1",
+  "template-url": "pdk-default#1.18.1",
+  "template-ref": "tags/1.18.1-0-g3d2e75c",
+}
