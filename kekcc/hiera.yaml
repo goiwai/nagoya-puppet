@@ -1,0 +1,23 @@
+---
+version: 5
+defaults:               # Used for any hierarchy level that omits these keys.
+  datadir: data         # This path is relative to hiera.yaml's directory.
+  data_hash: yaml_data  # Use the built-in YAML backend.
+# `puppet-apply` attempts to read YAML data in the directory of `data` in order from bottom to top and the overrides variables in consequence. The value for the `key` corresponds to `var4` in this example below.
+# key: var4 # in the data/nodes/hostname.yaml
+# key: var3 # in the data/services/svcname.eyaml
+# key: var2 # in the data/os/CentOS7-x86_64.yaml
+# key: var1 # in the data/common.yaml
+hierarchy:
+  - name: "Host-specific data"
+    path: "nodes/%{::trusted.hostname}.yaml"
+  - name: "Service-specific data"
+    mapped_paths: [services, svc, "services/%{svc}.eyaml"]
+    lookup_key: eyaml_lookup_key
+    options:
+      pkcs7_private_key: /etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
+      pkcs7_public_key: /etc/puppetlabs/puppet/keys/public_key.pkcs7.pem
+  - name: "OS-specific data"
+    path: "os/%{facts.os.name}%{facts.os.release.major}-%{facts.os.architecture}.yaml"
+  - name: "Common data"
+    path: "common.yaml"
