@@ -1,0 +1,49 @@
+kekcc::grid_ui:
+  package:
+    voms:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    voms-admin-client:
+      require:
+        - Package[umd-release]
+    lfc:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    fts-client:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    lcg-infosites:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    storm-srm-client:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    uberftp:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    gfal2-all:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+        - Package[xrootd-client]
+    gfal2-util:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    xrootd-client:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    nordugrid-arc-client:
+      require:
+        - Package[umd-release]
+        - Package[epel-release]
+    davix:
+      require:
+        - Package[umd-release]

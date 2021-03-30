@@ -1,0 +1,24 @@
+kekcc::voms_client:
+  class:
+    voms::install:
+      clientpkgs:
+        - voms-clients
+    voms::dteam:
+      require:
+        - Class[voms::install]
+    voms::ilc:
+      require:
+        - Class[voms::install]
+  voms::client:
+    belle:
+      servers:
+        - server: voms.cc.kek.jp
+          port: 15020
+          dn: /C=JP/O=KEK/OU=CRC/CN=host/voms.cc.kek.jp
+          ca_dn: /C=JP/O=KEK/OU=CRC/CN=KEK GRID Certificate Authority
+        - server: grid-voms.desy.de
+          port: 15020
+          dn: /C=DE/O=GermanGrid/OU=DESY/CN=host/grid-voms.desy.de
+          ca_dn: /C=DE/O=GermanGrid/CN=GridKa-CA
+      require:
+        - Class[voms::install]

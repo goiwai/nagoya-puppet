@@ -1,0 +1,23 @@
+kekcc::trustanchors:
+  # package:
+  #   EGI-trustanchors:
+  #     ensure: present
+  #     require:
+  #       - Package[umd-release]
+  #   # fetchcrl installs ca-policy-egi-core
+  #   # ca-policy-egi-core:
+  #   #   ensure: present,
+  #   #   require:
+  #   #     - Package[EGI-trustanchors]
+  yumrepo:
+    EGI-trustanchors:
+      ensure: present
+      enabled: 1
+      priority: 1
+      protect: 1
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[umd-release]
+  class:
+    fetchcrl:
+      manage_carepo: false

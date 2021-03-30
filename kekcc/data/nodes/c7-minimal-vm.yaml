@@ -1,0 +1,4 @@
+--- {}
+# notify:
+#   node-specific-debug-notify:
+#     message: "overwritten by nodes/%{::trusted.hostname}.yaml ::trusted=%{::trusted} ::server_facts=%{::server_facts} %{::module_name} %{facts.network}"

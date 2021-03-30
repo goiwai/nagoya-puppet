@@ -1,0 +1,57 @@
+kekcc::umd::repo_view_url: "https://repository.egi.eu/sw/production/umd/4/centos7/x86_64/updates/repoview/umd-release.html"
+kekcc::umd::tempfile: /tmp/%{facts.networking.fqdn}-kekcc-umd
+
+kekcc::umd:
+  file:
+    "%{lookup('kekcc::umd::tempfile')}":
+      ensure: present
+  exec:
+    path-to-umd-release-latest:
+      command: curl --silent --output - %{lookup('kekcc::umd::repo_view_url')} | grep -e 'umd-release-4\..*\.noarch\.rpm' | sed 's/^.*[hH][rR][eE][fF]=\"\(.*\)\" .*$/\1/g' | sort --version-sort | tail --lines=1 | tee %{lookup('kekcc::umd::tempfile')}
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      notify:
+        - Exec[umd-release]
+      require:
+        - File[%{lookup('kekcc::umd::tempfile')}]
+    umd-release:
+      command: yum -y install $(echo -n $(dirname %{lookup('kekcc::umd::repo_view_url')})/$(cat %{lookup('kekcc::umd::tempfile')}))
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      notify:
+        - Package[umd-release]
+      unless:
+        - yum list installed umd-release
+        - "! test -s %{lookup('kekcc::umd::tempfile')}"
+      require:
+        Exec[path-to-umd-release-latest]
+  package:
+    umd-release:
+      ensure: present
+      require:
+        - Exec[umd-release]
+  yumrepo:
+    UMD-4-base:
+      ensure: present
+      enabled: 1
+      priority: 10
+      protect: 1
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[umd-release]
+    UMD-4-updates:
+      ensure: present
+      enabled: 1
+      priority: 10
+      protect: 1
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[umd-release]

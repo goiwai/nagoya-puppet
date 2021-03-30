@@ -1,0 +1,33 @@
+kekcc::storm::frontend:
+  class:
+    storm::frontend:
+      be_xmlrpc_host: "%{alias('kekcc::storm.xmlrpc.host')}"
+      be_xmlrpc_token: "%{alias('kekcc::storm.xmlrpc.token')}"
+      db_host: "%{alias('kekcc::storm.db.host')}"
+      db_user: "%{alias('kekcc::storm.db.user')}"
+      db_passwd: "%{alias('kekcc::storm.db.storm.password')}"
+      log_debuglevel: "%{alias('kekcc::storm.frontend.log_debuglevel')}"
+      notify:
+        - Service[storm-webdav]
+        - Service[storm-globus-gridftp]
+      require:
+        - Class[storm::users]
+        # - Class[storm::repo]
+        # 20-Nov-2020 on UMD4
+        - Package[umd-release]
+  firewalld_custom_service:
+    storm-srmv2:
+      ensure: present
+      short: storm-srmv2
+      description: An SRM (v2.2) interface provided by StoRM/Frontend
+      ports:
+        - port: 8444
+          protocol: tcp
+  firewalld_service:
+    allow-storm-srmv2:
+      ensure: present
+      zone: public
+      service: storm-srmv2
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-srmv2]

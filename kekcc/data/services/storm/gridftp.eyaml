@@ -1,0 +1,91 @@
+# todo: gridftp.conf の場所は移動だ！
+#   https://gmail.com/#inbox/FMfcgxwJXLlccdQMBTtzlDKbTcrMdklW
+#   In fact, I recently realised that /etc/gridftp.conf is not the proper location for the configuration file because some properties like port_range, for example, are not loaded.
+#   The more proper location is /etc/grid-security/gridftp.conf and I’ve just updated the Puppet module to v2.1.0 to fix this location.
+kekcc::storm::gridftp:
+  class:
+    storm::gridftp:
+      port: 2811
+      port_range: '20000,25000'
+      connections_max: 2000
+      # redirect_lcmaps_log: true
+      llgt_log_file: /var/log/storm/lcmaps.log
+      lcmaps_debug_level: "%{alias('kekcc::storm.gridftp.lcmaps_debug_level')}"
+      lcas_debug_level: "%{alias('kekcc::storm.gridftp.lcas_debug_level')}"
+      load_storm_dsi_module: true
+      require:
+        - Class[storm::users]
+        # 20-Nov-2020 on UMD4
+        # - Class[storm::repo]
+        - Package[umd-release]
+  file:
+    globus-gridftp-server:
+      ensure: present
+      path: "%{alias('kekcc::storm.gridftp.globus-gridftp-server.path')}"
+      source: "%{alias('kekcc::storm.gridftp.globus-gridftp-server.source')}"
+    globus-gridftp-server-control:
+      ensure: present
+      path: "%{alias('kekcc::storm.gridftp.globus-gridftp-server-control.path')}"
+      source: "%{alias('kekcc::storm.gridftp.globus-gridftp-server-control.source')}"
+    globus-gridftp-server-progs:
+      ensure: present
+      path: "%{alias('kekcc::storm.gridftp.globus-gridftp-server-progs.path')}"
+      source: "%{alias('kekcc::storm.gridftp.globus-gridftp-server-progs.source')}"
+  exec:
+    install-self-build-globus-gridftp-server:
+      command: "yum -y install %{lookup('kekcc::storm.gridftp.globus-gridftp-server.path')} %{lookup('kekcc::storm.gridftp.globus-gridftp-server-control.path')} %{lookup('kekcc::storm.gridftp.globus-gridftp-server-progs.path')}"
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      onlyif:
+        - "test $(rpm --query --queryformat '%{literal('%')}{VERSION}' globus-gridftp-server-progs) != '13.21'"
+      notify:
+        - Service[storm-globus-gridftp]
+      require:
+        - File[globus-gridftp-server]
+        - File[globus-gridftp-server-control]
+        - File[globus-gridftp-server-progs]
+        - Package[storm-globus-gridftp-mp]
+  firewalld_custom_service:
+    storm-gridftp-control:
+      ensure: present
+      short: storm-gridftp-control
+      description: A port of StoRM/GridFTP for controlling communication
+      ports:
+        - port: 2811
+          protocol: tcp
+    storm-gridftp-transfer:
+      ensure: present
+      short: storm-gridftp-transfer
+      description: A range of ports for StoRM/GridFTP data transfer
+      ports:
+        - port: '20000-25000'
+          protocol: tcp
+  firewalld_service:
+    allow-storm-gridftp-control:
+      ensure: present
+      zone: public
+      service: storm-gridftp-control
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-gridftp-control]
+    allow-storm-gridftp-transfer:
+      ensure: present
+      zone: public
+      service: storm-gridftp-transfer
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-gridftp-transfer]
+    # class { 'storm::gridftp':
+    #   port                  => 2811,
+    #   port_range            => '20000,25000',
+    #   connections_max       => 2000,
+    #   # redirect_lcmaps_log   => true,
+    #   llgt_log_file         => '/var/log/storm/lcmaps.log',
+    #   lcmaps_debug_level    => 5,
+    #   lcas_debug_level      => 5,
+    #   load_storm_dsi_module => true,
+    # }

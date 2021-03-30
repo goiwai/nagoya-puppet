@@ -1,0 +1,4 @@
+--- {}
+# notify:
+#   os-specific-debug-notify:
+#     message: "overwritten by os/%{facts.os.name}%{facts.os.release.major}-%{facts.os.architecture}.yaml ::trusted=%{::trusted} ::server_facts=%{::server_facts} %{::module_name} %{facts.network}"

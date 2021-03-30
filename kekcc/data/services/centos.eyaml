@@ -1,0 +1,60 @@
+kekcc::centos:
+  package:
+    yum-plugin-priorities:
+      ensure: present
+  yumrepo:
+    base:
+      enabled: 1
+      priority: 20
+      protect: 0
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[epel-release]
+    updates:
+      enabled: 1
+      priority: 20
+      protect: 0
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[epel-release]
+  class:
+    selinux:
+      mode: "%{lookup('kekcc::common.selinux.mode')}"
+    firewalld:
+      package_ensure: "%{lookup('kekcc::common.firewalld.package_ensure')}"
+      service_ensure: "%{lookup('kekcc::common.firewalld.service_ensure')}"
+      # lookup always returns as string
+      # to get original data type boolean
+      service_enable: "%{alias('kekcc::common.firewalld.service_enable')}"
+      default_zone: "%{lookup('kekcc::common.firewalld.default_zone')}"
+    ntp: {} # empty hash
+  exec:
+    daemon-reload:
+      command: /usr/bin/systemctl daemon-reload
+      refreshonly: true
+  firewalld_zone:
+    trusted:
+      ensure: present
+      purge_rich_rules: true
+      purge_services: true
+      purge_ports: true
+      sources:
+        - "%{lookup('kekcc::common.networking.network')}/%{lookup('kekcc::common.networking.netmask')}"
+        - "%{lookup('kekcc::common.networking.network6')}/%{lookup('kekcc::common.networking.netmask6')}"
+    internal:
+      ensure: present
+      purge_rich_rules: true
+      purge_services: true
+      purge_ports: true
+      interfaces:
+        - lo
+    public:
+      ensure: present
+      purge_rich_rules: true
+      purge_services: true
+      purge_ports: true
+      # lookup() always converts Original types like Array/Boolean to String[]
+      # Using alias() to avoid converting Array[] to String[]
+      icmp_blocks: "%{alias('kekcc::common.firewalld.icmp_blocks')}"
+      interfaces:
+        - "%{facts.networking.primary}" # ens33

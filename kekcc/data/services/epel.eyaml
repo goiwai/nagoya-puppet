@@ -1,0 +1,13 @@
+kekcc::epel:
+  package:
+    epel-release:
+      ensure: present
+  yumrepo:
+    epel:
+      ensure: present
+      enabled: 1
+      priority: 30
+      protect: 0
+      require:
+        - Package[yum-plugin-priorities]
+        - Package[epel-release]

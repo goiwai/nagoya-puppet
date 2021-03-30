@@ -1,0 +1,16 @@
+kekcc::bdii:
+  # bdii::install installs bdii
+  # package:
+  #   bdii:
+  #     ensure: present
+  #     require:
+  #       - Package[umd-release]
+  class:
+    bdii:
+      firewall: false
+  service:
+    bdii.service:
+      ensure: running
+      enable: true
+  # firewalld:
+  #   2170/tcp: internal only

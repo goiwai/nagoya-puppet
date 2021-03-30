@@ -1,0 +1,33 @@
+kekcc::storm::storage:
+  storm::rootdir:
+    /disk: {}
+    /tape: {}
+  storm::sarootdir:
+    /disk/belle:
+      require:
+        - Storm::Rootdir[/disk]
+        - Class[storm::users]
+    /tape/belle:
+      require:
+        - Storm::Rootdir[/tape]
+        - Class[storm::users]
+    /tape/info:
+      require:
+        - Storm::Rootdir[/tape]
+        - Class[storm::users]
+    /disk/ilc:
+      require:
+        - Storm::Rootdir[/disk]
+        - Class[storm::users]
+    /tape/ilc:
+      require:
+        - Storm::Rootdir[/tape]
+        - Class[storm::users]
+    /disk/dteam:
+      require:
+        - Storm::Rootdir[/disk]
+        - Class[storm::users]
+    /tape/dteam:
+      require:
+        - Storm::Rootdir[/tape]
+        - Class[storm::users]

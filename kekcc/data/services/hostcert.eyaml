@@ -1,0 +1,50 @@
+kekcc::hostcert:
+  exec:
+    /tmp/decrypted-hostkey.pem:
+      # key の場所はダイナミックに取得したいんだが
+      # https://gmail.com/#inbox/KtbxLxGWvnJLSBQqzKkKkDVzZkzxwxkBrg
+      # hiera.yaml に定義されたものを参照する方法はなさそう
+      # eyaml 内に全ホストを書いておけば、 eyaml decrypt する必要はないが、全ホスト分書いておくのは面倒である
+      # 折衷案として common.yaml にキーの場所を書いておいて、それを参照することにした
+      # command: "eyaml decrypt --file=/tmp/encrypted-hostkey.pem --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem | head --lines=-1 > /tmp/decrypted-hostkey.pem"
+      command: "eyaml decrypt --file=/tmp/encrypted-hostkey.pem --pkcs7-public-key=%{lookup('kekcc::common.eyaml.pkcs7-public-key')} --pkcs7-private-key=%{lookup('kekcc::common.eyaml.pkcs7-private-key')} > /tmp/decrypted-hostkey.pem"
+      creates: /tmp/decrypted-hostkey.pem
+      # cwd は puppet を実行したディレクトリになってるようである
+      cwd: "%{lookup('kekcc::common.eyaml.keys-dir')}"
+      # onlyif:
+      #   - eyaml decrypt --file=/tmp/encrypted-hostkey.pem
+      path:
+        - /opt/puppetlabs/puppet/bin
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      require:
+        - File[/tmp/encrypted-hostkey.pem]
+  file:
+    /tmp/encrypted-hostkey.pem:
+      ensure: present
+      mode: '0600'
+      source:
+        - puppet:///modules/kekcc/certs/%{facts.fqdn}/encrypted-hostkey.pem
+    /etc/grid-security/hostcert.pem:
+      ensure: present
+      mode: '0644'
+      source:
+        - puppet:///modules/kekcc/certs/%{facts.fqdn}/hostcert.pem
+      require:
+        - Package[ca-policy-egi-core]
+    /etc/grid-security/hostkey.pem:
+      ensure: present
+      mode: '0400'
+      source:
+        - file:///tmp/decrypted-hostkey.pem
+      require:
+        - Package[ca-policy-egi-core]
+        - Exec[/tmp/decrypted-hostkey.pem]
+    /tmp/decrypted-hostkey.pem:
+      ensure: absent
+      require:
+        - Exec[/tmp/decrypted-hostkey.pem]
+        - File[/etc/grid-security/hostkey.pem]

@@ -1,0 +1,185 @@
+kekcc::common:
+  sitename: KMI-LCG
+  eyaml:
+    keys-dir: /etc/puppetlabs/puppet
+    pkcs7-private-key: /etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
+    pkcs7-public-key: /etc/puppetlabs/puppet/keys/public_key.pkcs7.pem
+  cvmfs:
+    client:
+      default_local:
+        cvmfs_repositories: grid.cern.ch,atlas.cern.ch,sft.cern.ch,dirac.egi.eu,ilc.desy.de,belle.kek.jp,belle.cern.ch
+        # for KEK inside setup
+        # for outside, just comment out this line. Then, CVMFS_HTTP_PROXY goes DIRECT.
+        cvmfs_http_proxy: http://kek2-htp01.cc.kek.jp|http://kek2-htp02.cc.kek.jp;http://kek2-htp03.cc.kek.jp|http://kek2-htp04.cc.kek.jp;DIRECT
+        # yes/no treated as a boolean parameter in the yaml. to avoid this and treated as a string parameter, yes/no is quoted.
+        cvmfs_use_geoapi: 'yes'
+  networking:
+    # todo: to be a dynamic definition
+    network: "%{facts.network}"
+    network6: "%{facts.network6}"
+    netmask: "%{facts.netmask}"
+    # todo: to be a dynamic definition
+    # firewall-cmd accepts only CIDR notation for IPv6
+    netmask6: '64'
+  selinux:
+    mode: disabled
+  firewalld:
+    package_ensure: installed
+    service_ensure: running
+    service_enable: true
+    default_zone: public
+    # A very long array below is required:
+    # until puppet-firewalld supports the property of icmp_block_inversion
+    # https://github.com/voxpupuli/puppet-firewalld/issues/270
+    icmp_blocks:
+      - address-unreachable
+      - bad-header
+      - communication-prohibited
+      - destination-unreachable
+      # - echo-reply
+      # - echo-request
+      - fragmentation-needed
+      - host-precedence-violation
+      - host-prohibited
+      - host-redirect
+      - host-unknown
+      - host-unreachable
+      - ip-header-bad
+      - neighbour-advertisement
+      - neighbour-solicitation
+      - network-prohibited
+      - network-redirect
+      - network-unknown
+      - network-unreachable
+      - no-route
+      - packet-too-big
+      - parameter-problem
+      - port-unreachable
+      - precedence-cutoff
+      - protocol-unreachable
+      - redirect
+      - required-option-missing
+      - router-advertisement
+      - router-solicitation
+      - source-quench
+      - source-route-failed
+      - time-exceeded
+      # - timestamp-reply
+      # - timestamp-request
+      - tos-host-redirect
+      - tos-host-unreachable
+      - tos-network-redirect
+      - tos-network-unreachable
+      - ttl-zero-during-reassembly
+      - ttl-zero-during-transit
+      - unknown-header-type
+      - unknown-option
+  account:
+    storm:
+      name: storm
+      group: storm
+      uid: 34562
+      gid: 67801
+      groups:
+        - storm
+        - edguser
+      home: /home/storm
+      comment: 'StoRM user'
+    edguser:
+      name: edguser
+      group: edguser
+      uid: 12345
+      gid: 67896
+      groups:
+        - edguser
+        - storm
+      home: /home/edguser
+      comment: 'Edguser user'
+    pools:
+      - name: belleuser
+        size: 400
+        base_uid: 50000
+        group: belleusers
+        gid: 50000
+        groups:
+          - belleusers
+        vo: belle
+        # role: NULL
+      - name: belleprd
+        size: 200
+        base_uid: 51000
+        group: belleprd
+        gid: 51000
+        vo: belle
+        groups:
+          - belleprd
+          - belleusers
+        role: production
+      - name: bellesgm
+        size: 200
+        base_uid: 52000
+        group: bellesgm
+        gid: 52000
+        vo: belle
+        groups:
+          - bellesgm
+          - belleusers
+        role: lcgadmin
+      - name: ilcuser
+        size: 20
+        base_uid: 8000
+        group: ilcusers
+        gid: 8000
+        groups:
+          - ilcusers
+        vo: ilc
+        # role: NULL
+      - name: ilcprd
+        size: 10
+        base_uid: 8100
+        group: ilcprd
+        gid: 8100
+        vo: ilc
+        groups:
+          - ilcprd
+          - ilcusers
+        role: production
+      - name: ilcsgm
+        size: 10
+        base_uid: 8200
+        group: ilcsgm
+        gid: 8200
+        vo: ilc
+        groups:
+          - ilcsgm
+          - ilcusers
+        role: lcgadmin
+      - name: dteamuser
+        size: 20
+        base_uid: 8500
+        group: dteamusers
+        gid: 8500
+        groups:
+          - dteamusers
+        vo: dteam
+        # role: NULL
+      - name: dteamprd
+        size: 10
+        base_uid: 8600
+        group: dteamprd
+        gid: 8600
+        vo: dteam
+        groups:
+          - dteamprd
+          - dteamusers
+        role: production
+      - name: dteamsgm
+        size: 10
+        base_uid: 8700
+        group: dteamsgm
+        gid: 8700
+        vo: dteam
+        groups:
+          - dteamsgm
+          - dteamusers
+        role: lcgadmin

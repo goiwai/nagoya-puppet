@@ -1,0 +1,52 @@
+kekcc::storm::db:
+  class:
+    storm::db:
+      root_password: "%{alias('kekcc::storm.db.root.password')}"
+      storm_password: "%{alias('kekcc::storm.db.storm.password')}"
+      override_options:
+        mysqld:
+          # https://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html
+          # 5.5 in archives: https://dev.mysql.com/doc/index-archive.html
+          # https://mariadb.com/kb/en/server-system-variables/
+          bind-address: 0.0.0.0
+          # bind-address: 127.0.0.1
+          max_connections: 2048
+          # default_storage_engine: MEMORY
+          default_storage_engine: InnoDB
+          # logging slow query and its location
+          slow_query_log: 'ON'
+          slow_query_log_file: "/var/log/mariadb/%{::trusted.hostname}-slow.log"
+          # How many threads the server should cache for reuse.
+          thread_cache_size: 100
+          # Do not cache results that are larger than this number of bytes.
+          query_cache_limit: 16M
+          # The amount of memory allocated for caching query results.
+          query_cache_size: 64M
+          # 0 or OFF: Do not cache results in or retrieve results from the query cache.
+          # 1 or ON: Cache all cacheable query results except for those that begin with SELECT SQL_NO_CACHE.
+          # 2 or DEMAND: Cache results only for cacheable queries that begin with SELECT SQL_CACHE.
+          query_cache_type: 'ON'
+          # Typically, a recommended innodb_buffer_pool_size value is 50 to 75 percent of system memory.
+          innodb_buffer_pool_size: 1G
+          # the size in bytes of each log file in the log group. The combined size of log files (innodb_log_file_size * innodb_log_files_in_group) cannot exceed a maximum value that is slightly less than 4GB.
+          # innodb_log_file_size: 512M
+          # This is OFF if mysqld uses external locking (system locking), ON if external locking is disabled. This affects only MyISAM table access.
+          skip_external_locking: 'ON'
+          # Maximum .ibd files MariaDB can have open at the same time.
+          # Only applies to systems with multiple XtraDB/InnoDB tablespaces,
+          # and is separate to the table cache and open_files_limit.
+          # innodb_open_files: 300
+          # 
+          # The number of file descriptors available to MariaDB.
+          # If you are getting the Too many open files error,
+          # then you should increase this limit.
+          # If set to 0, then MariaDB will calculate a limit based on the following:
+          # MAX(max_connections*5, max_connections +table_open_cache*2)
+          # open_files_limit: 10245
+      notify:
+        - Service[storm-frontend-server]
+        - Service[storm-backend-server]
+  # firewalld:
+    # allow
+    # 3306/tcp frontend/backend のみ
+    # port: なんか外用のサービスあるっけ？

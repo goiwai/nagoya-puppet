@@ -1,0 +1,201 @@
+kekcc::storm::backend:
+  class:
+    storm::backend:
+      hostname: "%{facts.networking.fqdn}"
+      db_username: "%{lookup('kekcc::storm.db.user')}"
+      db_password: "%{lookup('kekcc::storm.db.storm.password')}"
+      install_native_libs_gpfs: false
+      xmlrpc_security_token: "%{lookup('kekcc::storm.xmlrpc.token')}"
+      transfer_protocols:
+        - file
+        - gsiftp
+        - webdav
+      service_du_enabled: true
+      fs_type: posixfs
+      info_sitename: "%{lookup('kekcc::common.sitename')}"
+      info_storage_default_root: /tape
+      frontend_public_host: "%{alias('kekcc::storm.backend.frontend_public_host')}"
+      lcmaps_debug_level: "%{alias('kekcc::storm.backend.lcmaps_debug_level')}"
+      srm_pool_members: "%{alias('kekcc::storm.backend.srm_pool_members')}"
+      gsiftp_pool_members: "%{alias('kekcc::storm.backend.gsiftp_pool_members')}"
+      webdav_pool_members: "%{alias('kekcc::storm.backend.webdav_pool_members')}"
+      manage_path_authz_db: true  # (Boolean) — If true, allows to set content of path-authz.db file.
+      path_authz_db_file: puppet:///modules/kekcc/etc/storm/backend-server/path-authz.db # (String) — If manage_path_authz_db is true, set the content from this source path
+      storage_areas:
+        - name: dteam-disk
+          root_path: /disk/dteam
+          access_points:
+            - /disk/dteam
+          vos:
+            - dteam
+            - belle
+          storage_class: T0D1
+          online_size: 40
+        - name: dteam-tape
+          root_path: /tape/dteam
+          access_points:
+            - /dteam
+          vos:
+            - dteam
+            - belle
+          storage_class: T1D1
+          online_size: 40
+          nearline_size: 80
+        - name: belle-disk
+          root_path: /disk/belle
+          access_points:
+            - /disk/belle
+          vos:
+            - belle
+          space_token: BELLEDISK
+          storage_class: T0D1
+          online_size: 40
+        - name: belle-tape
+          root_path: /tape/belle
+          access_points:
+            - /belle
+          vos:
+            - belle
+          space_token: BELLE
+          storage_class: T1D1
+          online_size: 40
+          nearline_size: 80
+        - name: ilc-disk
+          root_path: /disk/ilc
+          access_points:
+            - /disk/ilc
+          vos:
+            - ilc
+          storage_class: T0D1
+          online_size: 40
+        - name: ilc-tape
+          root_path: /tape/ilc
+          access_points:
+            - /ilc
+          vos:
+            - ilc
+          storage_class: T1D1
+          online_size: 40
+          nearline_size: 80
+        - name: info
+          root_path: /tape/info
+          access_points:
+            - /info
+          online_size: 40
+          vos:
+            - belle
+            - dteam
+            - ilc
+      notify:
+        - Service[storm-frontend-server]
+      require:
+        - Class[storm::users]
+        # - Class[storm::repo]
+        # 20-Nov-2020 on UMD4
+        - Package[umd-release]
+        - Storm::Sarootdir[/disk/belle]
+        - Storm::Sarootdir[/tape/belle]
+        - Storm::Sarootdir[/disk/ilc]
+        - Storm::Sarootdir[/tape/ilc]
+        - Storm::Sarootdir[/disk/dteam]
+        - Storm::Sarootdir[/tape/dteam]
+  file:
+    "%{alias('kekcc::storm.backend.report.script')}":
+      ensure: present
+      source: puppet:///modules/storm/update-site-report.sh
+      owner: root
+      group: root
+      mode: '0644'
+      require:
+        - Class[storm::backend]
+  cron::job:
+    update-site-report:
+      command: "%{alias('kekcc::storm.backend.report.command')}"
+      minute: '*/20'
+      hour: '*'
+      date: '*'
+      month: '*'
+      weekday: '*'
+      user: root
+      # environment:
+      #   - MAILTO=root
+      #   - PATH=/usr/bin:/bin
+      description: Update Storage Site Report
+      require:
+        - File[%{lookup('kekcc::storm.backend.report.script')}]
+  exec:
+    create-site-report-if-not-exists:
+      command: "%{alias('kekcc::storm.backend.report.command')}"
+      creates: "%{alias('kekcc::storm.backend.report.output')}"
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      require:
+        - File[%{lookup('kekcc::storm.backend.report.script')}]
+        - Storm::Sarootdir[/tape/info]
+        - Class[storm::backend]
+  file_line:
+    add-rules-authz-database:
+      path: /etc/storm/backend-server/path-authz.db
+      #   'W' :       WRITE_FILE              "Write data on existing files"
+      #   'R' :       READ_FILE               "Read data"
+      #   'F' :       MOVE/RENAME             "Move a file"
+      #   'D' :       DELETE                  "Delete a file or a directory"
+      #   'L' :       LIST_DIRECTORY          "Listing a directory"
+      #   'M' :       CREATE_DIRECTORY        "Create a directory"
+      #   'N' :       CREATE_FILE             "Create a new file"
+      line: |
+        #------------+-----------------------------+---------------+----------
+        # user       | Path                        | Permission    | ACE
+        # class      |                             | mask          | Type
+        #------------+-----------------------------+---------------+----------
+        # # BELLE
+        # belleprd       /belle                        WRFDLMN         permit
+        # bellesgm       /belle                        WRFDLMN         permit
+        # bellegrid      /belle                        RL              permit
+        # bellegrid      /belle/TMP/belle/user         WRFDLMN         permit
+        # @ALL@          /belle                        WRFDLMN         deny
+        # # BELLEDISK
+        # belleprd       /disk/belle                   WRFDLMN         permit
+        # bellesgm       /disk/belle                   WRFDLMN         permit
+        # bellegrid      /disk/belle                   RL              permit
+        # bellegrid      /disk/belle/TMP/belle/user    WRFDLMN         permit
+        # @ALL@          /disk/belle                   WRFDLMN         deny
+        # # OPS
+        # opsgrid        /ops                          WRFDLMN         permit
+        # BELLE
+        belleprd       /belle                        WRFDLMN         permit
+        bellesgm       /belle                        WRFDLMN         permit
+        belleusers     /belle                        RL              permit
+        belleusers     /belle/TMP                    WRFDLMN         permit
+        @ALL@          /belle                        WRFDLMN         deny
+        @ALL@          /info                         WFDMN           deny
+        @ALL@          /                             WRFDLMN         permit
+      notify:
+        - Service[storm-backend-server]
+      require:
+        - File[/etc/storm/backend-server/path-authz.db]
+  firewalld_custom_service:
+    storm-rest:
+      ensure: present
+      short: storm-rest
+      description: A REST interface provided by StoRM/Backend
+      ports:
+        - port: 9998
+          protocol: tcp
+  firewalld_service:
+    allow-storm-rest:
+      ensure: present
+      zone: public
+      service: storm-rest
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-rest]
+  # firewalld:
+    # allow
+    # port: なんか外用のサービスあるっけ？
+    # rest:9998←これは要る？
+    # xmlrpc_unsecure_server_port:8080 #<=internal only

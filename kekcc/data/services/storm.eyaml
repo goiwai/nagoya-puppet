@@ -1,0 +1,110 @@
+kekcc::storm:
+  frontend:
+    # Possible values are:
+    # ERROR, WARN, INFO, DEBUG, DEBUG2. Default is INFO
+    log_debuglevel: INFO
+  backend:
+    frontend_public_host: "%{facts.networking.fqdn}"
+    srm_pool_members:
+      - hostname: "%{facts.networking.fqdn}"
+      - hostname: localhost
+    gsiftp_pool_members:
+      - hostname: "%{facts.networking.fqdn}"
+    webdav_pool_members:
+      - hostname: "%{facts.networking.fqdn}"
+    report:
+      script:
+        /etc/storm/backend-server/update-site-report.sh
+      output:
+        /tape/info/report.json
+      command:
+        /bin/bash /etc/storm/backend-server/update-site-report.sh /tape/info/report.json
+    # The LCMAPS logging level. Values from 0 (ERROR) to 5 (DEBUG). Default: 3 (INFO)
+    lcmaps_debug_level: 3
+  gridftp:
+    # A workaround for a bug: empty transfer log file
+    globus-gridftp-server:
+      path: /tmp/globus-gridftp-server-13.21-1.gct.x86_64.rpm
+      source: puppet:///modules/kekcc/globus-gridftp-server-13.21-1.gct.x86_64.rpm
+    globus-gridftp-server-control:
+      path: /tmp/globus-gridftp-server-control-9.1-1.gct.x86_64.rpm
+      source: puppet:///modules/kekcc/globus-gridftp-server-control-9.1-1.gct.x86_64.rpm
+    globus-gridftp-server-progs:
+      path: /tmp/globus-gridftp-server-progs-13.21-1.gct.x86_64.rpm
+      source: puppet:///modules/kekcc/globus-gridftp-server-progs-13.21-1.gct.x86_64.rpm
+    # The LCMAPS logging level. Values from 0 (ERROR) to 5 (DEBUG). Default: 3 (INFO)
+    lcmaps_debug_level: 3
+    # The LCAS logging level. Values from 0 (ERROR) to 5 (DEBUG). Default: 3 (INFO)
+    lcas_debug_level: 3
+  webdav:
+    hostnames:
+      - "%{facts.networking.fqdn}"
+      - localhost
+    jvm_opts: -Xms512m -Xmx1024m -Dspring.profiles.active=belle
+    # No longer necessary. Appeared on UMD4 on Nov-18, 2020
+    # package:
+    #   python2-zsi:
+    #     source: https://repo.cloud.cnaf.infn.it/repository/voms-externals-rpm/centos7/python2-zsi-2.1-16.el7.noarch.rpm
+    #   voms-admin-client:
+    #     source: https://repo.cloud.cnaf.infn.it/repository/voms-rpm-stable/centos7/voms-admin-client-2.0.20-1.el7.noarch.rpm
+    vomap:
+      x509_user_cert: /root/.globus/usercert.pem
+      x509_user_key: /root/.globus/userkey.pem
+      belle:
+        output:
+          /etc/storm/webdav/vo-mapfiles.d/belle.without.VOMS.vomap
+        command:
+          voms-admin --host voms.cc.kek.jp --vo belle list-users
+      ilc:
+        output:
+          /etc/storm/webdav/vo-mapfiles.d/ilc.vomap
+        command:
+          voms-admin --host grid-voms.desy.de --vo ilc list-users
+      dteam:
+        output:
+          /etc/storm/webdav/vo-mapfiles.d/dteam.vomap
+        command:
+          voms-admin --host voms2.hellasgrid.gr --vo dteam list-users
+  xmlrpc:
+    host: localhost
+    # /opt/puppetlabs/puppet/bin/eyaml encrypt --string='xmlrpc%token%backend%nagoya' --output=block --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
+    # /opt/puppetlabs/puppet/bin/eyaml decrypt --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem --eyaml=/etc/puppetlabs/code/modules/kekcc/data/services/storm.eyaml
+    token: >
+      ENC[PKCS7,MIIBiQYJKoZIhvcNAQcDoIIBejCCAXYCAQAxggEhMIIBHQIBADAFMAACAQEw
+      DQYJKoZIhvcNAQEBBQAEggEAxedWcseHLmVEtB1zO3iXPDiW7Irwk3gbc91r
+      tiJOiZ8FJx79TWb7mz3CdI1i8TRzTPM0d48E84pF6C6GbR4ji+5A4ZpwcJK2
+      5MKj9MXn2OfKMg40sKO1wWKX3miVfdlbpekdXK1iYQkLLZKVo2jhDIwyIpmV
+      FebGdC2zjkgH85WCo0W3jT/UuIN+F6tTvt4rnL0GC9Zb3qT1mYKpe5kmP3Sz
+      btH3xvS7D4TvidcPZAnFEYHp9p1WPRZgx6Acnr1X7LlIewNV0Ora1QdFeVJF
+      brTGsJTM2KKcnlBdoQDnCWhz/8rKLDv+T9zuYbHgH+eWR1Ce4MXWujqZsCIp
+      UZo09DBMBgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBAMsxrpqzap7XEQO4Rq
+      qNqbgCC+bhwI2gGdD0IFHSqU5b552oZl+sq44hMw0a4mtGE7iQ==]
+  db:
+    host: localhost
+    user: storm
+    storm:
+      # /opt/puppetlabs/puppet/bin/eyaml encrypt --string='mariadb%pass%storm%nagoya' --output=block --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
+      # /opt/puppetlabs/puppet/bin/eyaml decrypt --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem --eyaml=/etc/puppetlabs/code/modules/kekcc/data/services/storm.eyaml
+      password: >
+        ENC[PKCS7,MIIBiQYJKoZIhvcNAQcDoIIBejCCAXYCAQAxggEhMIIBHQIBADAFMAACAQEw
+        DQYJKoZIhvcNAQEBBQAEggEAEcJUqNrUSJUMWheUVD/DsY5aM0ttgStjSJ+A
+        gVWZ/fdzNw6licG1WP1jsOqjaWChqzyzf9cvoiYc11i0IU5LvFWc1NBH+1v/
+        +fdS7QUpTXLsqjfuJi1bXg+h9mknzidhqHtWuyRg5MdTLdRN4vUb5vQPX551
+        WZDRmJYfFIJwInx2lD3tFkD//+a2Hqu7Yh0r5fYTeft0MrQuBGp+dErtHfyw
+        E7XEmOEagKjNXAdph5NiEGWA/v1PZcAIxznQ4QqEyCzQYOodmAsn47DGqEPN
+        Y93/1v7kqcJrvbQLCGzHukHZkR3PBKXyaPzEOi6K4OZoTC7yt38vuDeavg7I
+        5b9oCTBMBgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBBitQXQ+SU+42KEUB6v
+        0HnpgCDu0AwwcCWKf7pE6szkGDwzQyxyHW8Db8gaVihUrlrwDw==]
+    root:
+      # /opt/puppetlabs/puppet/bin/eyaml encrypt --string='mariadb%pass%root%nagoya' --output=block --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
+      # /opt/puppetlabs/puppet/bin/eyaml decrypt --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem --eyaml=/etc/puppetlabs/code/modules/kekcc/data/services/storm.eyaml
+      password: >
+        ENC[PKCS7,MIIBiQYJKoZIhvcNAQcDoIIBejCCAXYCAQAxggEhMIIBHQIBADAFMAACAQEw
+        DQYJKoZIhvcNAQEBBQAEggEAWw2gzo9JNU9GarJZCpuYx6Dql8CiZzU1c9a3
+        0deVFlKLuUuot/Qi3uRSpLpNCu4uZ7/RtFrWSG31r691gDkS8vVGwcU8ndGK
+        n4WL5c/IoRRlU+kk2PPQVXdKvc0V4tqjZKlGJR3l9q2x0QMEFiJIe+ASujy/
+        WXM7oTTCj/1Mni+LvNqASbbUNIgZzk+USryzMo+kH2Ug3SS/BNnayWBqh4B+
+        Q56Tfs+NjgAihSabRv0SS9gnj2Na3N4tENDVzI4BrsxQYVyyLQEg7mRSinCA
+        Oh3Q58l/C9oDRviv3JugRa8tadLzTPJDL28AYhP8eUIwO3PWVxfJoKLS8V4V
+        Qu/GzzBMBgkqhkiG9w0BBwEwHQYJYIZIAWUDBAEqBBAQZW1PNVpHPycDveWk
+        9+8IgCCrKHTKTBuK7vBhQ4lhegFoCb/vEIIBrK9PwHyviajm7g==]

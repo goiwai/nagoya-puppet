@@ -1,0 +1,31 @@
+kekcc::local_ca:
+  file:
+    /tmp/globus-simple-ca-06c4611c-1.0-1.el7.noarch.rpm:
+      ensure: present
+      source: puppet:///modules/kekcc/globus-simple-ca-06c4611c-1.0-1.el7.noarch.rpm
+    /etc/grid-security/certificates/06c4611c.namespaces:
+      ensure: present
+      source: puppet:///modules/kekcc/etc/grid-security/certificates/06c4611c.namespaces
+      require: Package[globus-simple-ca-06c4611c]
+    # openssl x509 -in 06c4611c.0 -noout -subject_hash
+    # 06c4611c
+    # openssl x509 -in 06c4611c.0 -noout -subject_hash_old
+    # 386ec443
+    /etc/grid-security/certificates/386ec443.0:
+      ensure: link
+      target: 06c4611c.0
+      require: Package[globus-simple-ca-06c4611c]
+    /etc/grid-security/certificates/386ec443.signing_policy:
+      ensure: link
+      target: 06c4611c.signing_policy
+      require: Package[globus-simple-ca-06c4611c]
+    /etc/grid-security/certificates/386ec443.namespaces:
+      ensure: link
+      target: 06c4611c.namespaces
+      require: File[/etc/grid-security/certificates/06c4611c.namespaces]
+  package:
+    globus-simple-ca-06c4611c:
+      ensure: installed
+      source: /tmp/globus-simple-ca-06c4611c-1.0-1.el7.noarch.rpm
+      require:
+        - File[/tmp/globus-simple-ca-06c4611c-1.0-1.el7.noarch.rpm]

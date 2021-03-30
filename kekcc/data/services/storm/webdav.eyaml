@@ -1,0 +1,368 @@
+kekcc::storm::webdav:
+  class:
+    storm::webdav:
+      storage_areas:
+        - name: dteam-disk
+          root_path: /disk/dteam
+          access_points:
+            - /disk/dteam
+          vo_map_enabled: true
+          # vo_map_grants_write_permission: true
+          vos:
+            - dteam
+        - name: dteam-tape
+          root_path: /tape/dteam
+          access_points:
+            - /dteam
+          vo_map_enabled: true
+          # vo_map_grants_write_permission: true
+          vos:
+            - dteam
+        - name: ilc-disk
+          root_path: /disk/ilc
+          access_points:
+            - /disk/ilc
+          vo_map_enabled: true
+          # vo_map_grants_write_permission: true
+          vos:
+            - ilc
+        - name: ilc-tape
+          root_path: /tape/ilc
+          access_points:
+            - /ilc
+          vo_map_enabled: true
+          # vo_map_grants_write_permission: true
+          vos:
+            - ilc
+        - name: belle-disk
+          root_path: /disk/belle
+          access_points:
+            - /disk/belle
+          # Enables read access to users authenticated with an X.509 certificate issued by
+          # a trusted CA (users without VOMS credentials).
+          # Defaults to false, which means that all users need to authenticate with a VOMS credential
+          # authenticated_read_enabled: false
+          # anonymous_read_enabled: A boolean value used to enable anonymous read access to storage area content. Optional. Default: false.
+          # anonymous_read_enabled: false
+          # vo_map_enabled: A boolean value used to enable the use of the VO gridmap files. Optional. Default: false.
+          # vo_map_enabled: true
+          # vo_map_grants_write_access: A boolean value used to grant write access to the VO users read from gridmap file. Optional. Default: false.
+          # vo_map_grants_write_permission: true
+          # orgs_grant_write_permission: A boolean value used to grant write access to the members of the organizations defined with orgs. Optional. Default: false.
+          # orgs_grant_write_permission:  false
+          # Enables scope-based authorization following the rules imposed by the WLCG JWT profile. Defaults to false.          
+          # wlcg_scope_authz_enabled: false
+          # Enables fine-grained authorization engine. Defaults to false.
+          fine_grained_authz_enabled: true
+          vos:
+            - belle.without.VOMS
+        - name: belle-tape
+          root_path: /tape/belle
+          access_points:
+            - /belle
+          vo_map_enabled: true
+          fine_grained_authz_enabled: true
+          vos:
+            - belle.without.VOMS
+        - name: info
+          root_path: /tape/info
+          access_points:
+            # - /belle/info
+            - /info
+          # authenticated_read_enabled: false
+          # anonymous_read_enabled: false
+          # vo_map_enabled: true
+          # vo_map_grants_write_permission: false
+          # to make this area read-only access
+          vos: []
+      # http_port and https_port: the service ports. Default: 8085, 8443.
+      # http_port: 8085
+      # https_port: 8443
+      # hostnames: the list of hostname and aliases supported for Third-Party-Copy.
+      hostnames: "%{alias('kekcc::storm.webdav.hostnames')}"
+      # Enables/disables  support for VO map files
+      vo_map_files_enable: true
+      # Max concurrent connections
+      max_concurrent_connections: 300
+      # Connection queue size
+      max_queue_size: 900
+      # Connector Maximum idle time (in milliseconds)
+      connector_max_idle_time: 30000
+      # JVM options
+      jvm_opts: "%{alias('kekcc::storm.webdav.jvm_opts')}"
+      # Max number of active third party copy connections
+      tpc_max_connections: 50
+      # Proactively verify checksums in third party copy
+      tpc_verify_checksum: true
+      # Should StoRM WebDAV always require a valid client certificate on the HTTPS endpoint?
+      # Set to 'false' if you want token-based authentication to work (and thus third-party copy)
+      require_client_cert: true
+      # Use Conscrypt JSSE provider?
+      # Set to 'true' if you want to use a faster TLS implementation which can improve dramatically
+      # the performance on data transfers. This flag must also set to "true" when HTTP/2 is enabled
+      #
+      # [storm-users] Use Conscrypt JSSE provider?
+      # It's disabled by default since it caused the server to freeze in some situations observed at INFN T1.
+      # it works reliably when using a Java 11 VM, and it's in production since weeks at INFN with this setting and we haven't observed problems. 
+      use_conscrypt: true
+      # Use Conscrypt JSSE provider for TPC client connections?
+      # Set to 'true' if you want to use a faster TLS implementation which can improve dramatically
+      # the performance on data transfers. This flag controls the use of Conscrypt for TPC client connections.
+      tpc_use_conscrypt: true
+      # Enable HTTP/2 support?
+      # Set to 'true' if you want to enable HTTP/2 (and remember to enable conscrypt too!)
+      enable_http2: true
+      require:
+        - Class[storm::users]
+        # 20-Nov-2020 on UMD4
+        # - Class[storm::repo]
+        - Package[umd-release]
+  storm::webdav::application_file:
+    application-belle.yaml:
+      source: puppet:///modules/kekcc/etc/storm/webdav/config/application-belle.yaml
+  # 18-Nov-2020 on UMD4
+  package:
+    # Conscrypt works reliably when using a Java 11 VM
+    # Backend failure with Java 11 VM
+    # java-11-openjdk:
+    #   ensure: installed
+    python2-zsi:
+      ensure: installed
+      # source: "%{alias('kekcc::storm.webdav.package.python2-zsi.source')}"
+    voms-admin-client:
+      ensure: installed
+      # source: "%{alias('kekcc::storm.webdav.package.voms-admin-client.source')}"
+      require:
+        - Package[python2-zsi]
+  exec:
+    # Conscrypt works reliably when using a Java 11 VM
+    # Backend failure with Java 11 VM
+    # alternatives-Java-11-VM:
+    #   command: "echo 2 | alternatives --config java"
+    #   path:
+    #     - /usr/bin
+    #     - /usr/sbin
+    #     - /bin
+    #   provider: shell
+    #   logoutput: true
+    #   notify:
+    #     - Service[storm-webdav]
+    #   require:
+    #     - Package[java-11-openjdk]
+    "%{alias('kekcc::storm.webdav.vomap.belle.output')}":
+      command: "%{lookup('kekcc::storm.webdav.vomap.belle.command')} > %{lookup('kekcc::storm.webdav.vomap.belle.output')}"
+      creates: "%{alias('kekcc::storm.webdav.vomap.belle.output')}"
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      environment:
+        # unnecessary in production because of valid hostcert
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      notify:
+        - Service[storm-webdav]
+      require:
+        - Package[voms-admin-client]
+        - Package[storm-webdav]
+    "%{alias('kekcc::storm.webdav.vomap.ilc.output')}":
+      command: "%{lookup('kekcc::storm.webdav.vomap.ilc.command')} > %{lookup('kekcc::storm.webdav.vomap.ilc.output')}"
+      creates: "%{alias('kekcc::storm.webdav.vomap.ilc.output')}"
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      environment:
+        # unnecessary in production because of valid hostcert
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      notify:
+        - Service[storm-webdav]
+      require:
+        - Package[voms-admin-client]
+        - Package[storm-webdav]
+    "%{alias('kekcc::storm.webdav.vomap.dteam.output')}":
+      command: "%{lookup('kekcc::storm.webdav.vomap.dteam.command')} > %{lookup('kekcc::storm.webdav.vomap.dteam.output')}"
+      creates: "%{alias('kekcc::storm.webdav.vomap.dteam.output')}"
+      path:
+        - /usr/bin
+        - /usr/sbin
+        - /bin
+      provider: shell
+      logoutput: true
+      environment:
+        # unnecessary in production because of valid hostcert
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      notify:
+        - Service[storm-webdav]
+      require:
+        - Package[voms-admin-client]
+        - Package[storm-webdav]
+  file:
+    "%{alias('kekcc::storm.webdav.vomap.belle.output')}":
+      ensure: present
+      owner: root
+      group: storm
+      mode: '0640'
+      require:
+        - Package[storm-webdav]
+        - Exec[%{lookup('kekcc::storm.webdav.vomap.belle.output')}]
+    "%{alias('kekcc::storm.webdav.vomap.ilc.output')}":
+      ensure: present
+      owner: root
+      group: storm
+      mode: '0640'
+      require:
+        - Package[storm-webdav]
+        - Exec[%{lookup('kekcc::storm.webdav.vomap.ilc.output')}]
+    "%{alias('kekcc::storm.webdav.vomap.dteam.output')}":
+      ensure: present
+      owner: root
+      group: storm
+      mode: '0640'
+      require:
+        - Package[storm-webdav]
+        - Exec[%{lookup('kekcc::storm.webdav.vomap.dteam.output')}]
+  cron::job:
+    update-vomap-belle:
+      command: "%{lookup('kekcc::storm.webdav.vomap.belle.command')} > %{lookup('kekcc::storm.webdav.vomap.belle.output')}"
+      minute: '10'
+      hour: '*/6'
+      date: '*'
+      month: '*'
+      weekday: '*'
+      user: root
+      environment:
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      description: Update VO Map File for Belle VO
+      require:
+        - Package[voms-admin-client]
+    update-vomap-ilc:
+      command: "%{lookup('kekcc::storm.webdav.vomap.ilc.command')} > %{lookup('kekcc::storm.webdav.vomap.ilc.output')}"
+      minute: '12'
+      hour: '*/6'
+      date: '*'
+      month: '*'
+      weekday: '*'
+      user: root
+      environment:
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      description: Update VO Map File for ILC VO
+      require:
+        - Package[voms-admin-client]
+    update-vomap-dteam:
+      command: "%{lookup('kekcc::storm.webdav.vomap.dteam.command')} > %{lookup('kekcc::storm.webdav.vomap.dteam.output')}"
+      minute: '14'
+      hour: '*/6'
+      date: '*'
+      month: '*'
+      weekday: '*'
+      user: root
+      environment:
+        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
+        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
+      description: Update VO Map File for dteam VO
+      require:
+        - Package[voms-admin-client]
+  firewalld_custom_service:
+    storm-webdav-http:
+      ensure: present
+      short: storm-webdav-http
+      description: A StoRM/WebDAV interface via HTTP
+      ports:
+        - port: 8085
+          protocol: tcp
+    storm-webdav-https:
+      ensure: present
+      short: storm-webdav-https
+      description: A StoRM/WebDAV interface via HTTPS
+      ports:
+        - port: 8443
+          protocol: tcp
+  firewalld_service:
+    allow-storm-webdav-http:
+      ensure: present
+      zone: public
+      service: storm-webdav-http
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-webdav-http]
+    allow-storm-webdav-https:
+      ensure: present
+      zone: public
+      service: storm-webdav-https
+      require:
+        - Firewalld_zone[public]
+        - Firewalld_custom_service[storm-webdav-https]
+  firewalld_rich_rule:
+    redirect-http:80/tcp-to-storm-webdav-http:8085/tcp-public-IPv4:
+      ensure: present
+      zone: public  # doesn't allow the array
+      family: ipv4  # doesn't allow the array
+      forward_port:
+        port: 80
+        protocol: tcp
+        to_port: 8085
+    redirect-http:80/tcp-to-storm-webdav-http:8085/tcp-public-IPv6:
+      ensure: present
+      zone: public
+      family: ipv6
+      forward_port:
+        port: 80
+        protocol: tcp
+        to_port: 8085
+    redirect-https:443/tcp-to-storm-webdav-https:8443/tcp-public-IPv4:
+      ensure: present
+      zone: public
+      family: ipv4
+      forward_port:
+        port: 443
+        protocol: tcp
+        to_port: 8443
+    redirect-https:443/tcp-to-storm-webdav-https:8443/tcp-public-IPv6:
+      ensure: present
+      zone: public
+      family: ipv6
+      forward_port:
+        port: 443
+        protocol: tcp
+        to_port: 8443
+    redirect-http:80/tcp-to-storm-webdav-http:8085/tcp-trusted-IPv4:
+      ensure: present
+      zone: trusted  # doesn't allow the array
+      family: ipv4  # doesn't allow the array
+      forward_port:
+        port: 80
+        protocol: tcp
+        to_port: 8085
+    redirect-http:80/tcp-to-storm-webdav-http:8085/tcp-trusted-IPv6:
+      ensure: present
+      zone: trusted
+      family: ipv6
+      forward_port:
+        port: 80
+        protocol: tcp
+        to_port: 8085
+    redirect-https:443/tcp-to-storm-webdav-https:8443/tcp-trusted-IPv4:
+      ensure: present
+      zone: trusted
+      family: ipv4
+      forward_port:
+        port: 443
+        protocol: tcp
+        to_port: 8443
+    redirect-https:443/tcp-to-storm-webdav-https:8443/tcp-trusted-IPv6:
+      ensure: present
+      zone: trusted
+      family: ipv6
+      forward_port:
+        port: 443
+        protocol: tcp
+        to_port: 8443

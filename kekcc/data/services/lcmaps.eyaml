@@ -1,0 +1,4 @@
+kekcc::lcmaps:
+  class:
+    lcmaps:
+      pools: "%{alias('kekcc::common.account.pools')}"
