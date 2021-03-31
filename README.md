@@ -2,7 +2,7 @@
 
 See <https://wiki.kek.jp/display/~iwai/StoRM+Puppet+Module+for+Kato-san+KMI> for detailed instruction.
 
-## Grid-UI Setup
+## Grid-UI Setup Example
 
 ```shell
 # install puppet5
@@ -13,9 +13,14 @@ See <https://wiki.kek.jp/display/~iwai/StoRM+Puppet+Module+for+Kato-san+KMI> for
 % sudo yum install git
 
 % cd /mnt
-% git clone https://github.com/goiwai/nagoya-puppet.git
- 
+% sudo git clone https://github.com/goiwai/nagoya-puppet.git
+
+# copy a pair of PKCS#7 keys (not contained in the Git repo)
+% sudo cp /path/to/keys/*.pem /mnt/nagoya-puppet/keys/
+
+# general setup
 % sudo puppet apply --test /mnt/nagoya-puppet/setup.pp
 
+# service-specific setup
 % sudo puppet apply --test /etc/puppetlabs/code/environments/production/manifests/grid-ui.pp
 ```
