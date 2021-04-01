@@ -1,8 +1,9 @@
 # Puppet module for Kato-san/KMI
 
-See <https://wiki.kek.jp/display/belle2crc/StoRM+Puppet+Module+for+Kato-san+KMI> for detailed instruction.
+See <https://confluence.desy.de/display/~goiwai/StoRM+Puppet+Module+for+Kato-san+KMI> for detailed instruction.
 
-!See <https://wiki.kek.jp/display/belle2crc/StoRM+Puppet+Module+for+Kato-san+KMI> for detailed instruction.
+I am not 100% sure but it seems to be temporarily unavailable to update the resource below <https://wiki.kek.jp>.
+~~See <https://wiki.kek.jp/display/belle2crc/StoRM+Puppet+Module+for+Kato-san+KMI> for detailed instruction.~~
 
 ## Grid-UI Setup Example
 
