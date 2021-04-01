@@ -55,16 +55,6 @@ kekcc::storm:
           /etc/storm/webdav/vo-mapfiles.d/belle.without.VOMS.vomap
         command:
           voms-admin --host voms.cc.kek.jp --vo belle list-users
-      ilc:
-        output:
-          /etc/storm/webdav/vo-mapfiles.d/ilc.vomap
-        command:
-          voms-admin --host grid-voms.desy.de --vo ilc list-users
-      dteam:
-        output:
-          /etc/storm/webdav/vo-mapfiles.d/dteam.vomap
-        command:
-          voms-admin --host voms2.hellasgrid.gr --vo dteam list-users
   xmlrpc:
     host: localhost
     # /opt/puppetlabs/puppet/bin/eyaml encrypt --string='xmlrpc%token%backend%nagoya' --output=block --pkcs7-public-key=/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem --pkcs7-private-key=/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem
