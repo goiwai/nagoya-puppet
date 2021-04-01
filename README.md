@@ -8,7 +8,7 @@ See <https://wiki.kek.jp/display/belle2crc/StoRM+Puppet+Module+for+Kato-san+KMI>
 # install puppet5
 % sudo yum install https://yum.puppetlabs.com/puppet5-release-el-7.noarch.rpm
 % sudo yum install puppet-agent
- 
+
 # install git and something else
 % sudo yum install git
 
