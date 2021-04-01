@@ -16,9 +16,9 @@ kekcc::storm:
       script:
         /etc/storm/backend-server/update-site-report.sh
       output:
-        /tape/info/report.json
+        /storage/info/report.json
       command:
-        /bin/bash /etc/storm/backend-server/update-site-report.sh /tape/info/report.json
+        /bin/bash /etc/storm/backend-server/update-site-report.sh /storage/info/report.json
     # The LCMAPS logging level. Values from 0 (ERROR) to 5 (DEBUG). Default: 3 (INFO)
     lcmaps_debug_level: 3
   gridftp:
