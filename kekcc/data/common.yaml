@@ -97,7 +97,7 @@ kekcc::common:
       comment: 'Edguser user'
     pools:
       - name: belleuser
-        size: 400
+        size: 200
         base_uid: 50000
         group: belleusers
         gid: 50000
@@ -106,7 +106,7 @@ kekcc::common:
         vo: belle
         # role: NULL
       - name: belleprd
-        size: 200
+        size: 50
         base_uid: 51000
         group: belleprd
         gid: 51000
@@ -116,7 +116,7 @@ kekcc::common:
           - belleusers
         role: production
       - name: bellesgm
-        size: 200
+        size: 50
         base_uid: 52000
         group: bellesgm
         gid: 52000
