@@ -2,42 +2,11 @@ kekcc::storm::webdav:
   class:
     storm::webdav:
       storage_areas:
-        - name: dteam-disk
-          root_path: /disk/dteam
+        - name: Lustre-for-Belle-II
+          root_path: /storage/belle
           access_points:
-            - /disk/dteam
+            - /belle
           vo_map_enabled: true
-          # vo_map_grants_write_permission: true
-          vos:
-            - dteam
-        - name: dteam-tape
-          root_path: /tape/dteam
-          access_points:
-            - /dteam
-          vo_map_enabled: true
-          # vo_map_grants_write_permission: true
-          vos:
-            - dteam
-        - name: ilc-disk
-          root_path: /disk/ilc
-          access_points:
-            - /disk/ilc
-          vo_map_enabled: true
-          # vo_map_grants_write_permission: true
-          vos:
-            - ilc
-        - name: ilc-tape
-          root_path: /tape/ilc
-          access_points:
-            - /ilc
-          vo_map_enabled: true
-          # vo_map_grants_write_permission: true
-          vos:
-            - ilc
-        - name: belle-disk
-          root_path: /disk/belle
-          access_points:
-            - /disk/belle
           # Enables read access to users authenticated with an X.509 certificate issued by
           # a trusted CA (users without VOMS credentials).
           # Defaults to false, which means that all users need to authenticate with a VOMS credential
@@ -56,16 +25,8 @@ kekcc::storm::webdav:
           fine_grained_authz_enabled: true
           vos:
             - belle.without.VOMS
-        - name: belle-tape
-          root_path: /tape/belle
-          access_points:
-            - /belle
-          vo_map_enabled: true
-          fine_grained_authz_enabled: true
-          vos:
-            - belle.without.VOMS
         - name: info
-          root_path: /tape/info
+          root_path: /storage/info
           access_points:
             # - /belle/info
             - /info
@@ -167,42 +128,6 @@ kekcc::storm::webdav:
       require:
         - Package[voms-admin-client]
         - Package[storm-webdav]
-    "%{alias('kekcc::storm.webdav.vomap.ilc.output')}":
-      command: "%{lookup('kekcc::storm.webdav.vomap.ilc.command')} > %{lookup('kekcc::storm.webdav.vomap.ilc.output')}"
-      creates: "%{alias('kekcc::storm.webdav.vomap.ilc.output')}"
-      path:
-        - /usr/bin
-        - /usr/sbin
-        - /bin
-      provider: shell
-      logoutput: true
-      environment:
-        # unnecessary in production because of valid hostcert
-        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
-        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
-      notify:
-        - Service[storm-webdav]
-      require:
-        - Package[voms-admin-client]
-        - Package[storm-webdav]
-    "%{alias('kekcc::storm.webdav.vomap.dteam.output')}":
-      command: "%{lookup('kekcc::storm.webdav.vomap.dteam.command')} > %{lookup('kekcc::storm.webdav.vomap.dteam.output')}"
-      creates: "%{alias('kekcc::storm.webdav.vomap.dteam.output')}"
-      path:
-        - /usr/bin
-        - /usr/sbin
-        - /bin
-      provider: shell
-      logoutput: true
-      environment:
-        # unnecessary in production because of valid hostcert
-        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
-        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
-      notify:
-        - Service[storm-webdav]
-      require:
-        - Package[voms-admin-client]
-        - Package[storm-webdav]
   file:
     "%{alias('kekcc::storm.webdav.vomap.belle.output')}":
       ensure: present
@@ -212,22 +137,6 @@ kekcc::storm::webdav:
       require:
         - Package[storm-webdav]
         - Exec[%{lookup('kekcc::storm.webdav.vomap.belle.output')}]
-    "%{alias('kekcc::storm.webdav.vomap.ilc.output')}":
-      ensure: present
-      owner: root
-      group: storm
-      mode: '0640'
-      require:
-        - Package[storm-webdav]
-        - Exec[%{lookup('kekcc::storm.webdav.vomap.ilc.output')}]
-    "%{alias('kekcc::storm.webdav.vomap.dteam.output')}":
-      ensure: present
-      owner: root
-      group: storm
-      mode: '0640'
-      require:
-        - Package[storm-webdav]
-        - Exec[%{lookup('kekcc::storm.webdav.vomap.dteam.output')}]
   cron::job:
     update-vomap-belle:
       command: "%{lookup('kekcc::storm.webdav.vomap.belle.command')} > %{lookup('kekcc::storm.webdav.vomap.belle.output')}"
@@ -241,34 +150,6 @@ kekcc::storm::webdav:
         - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
         - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
       description: Update VO Map File for Belle VO
-      require:
-        - Package[voms-admin-client]
-    update-vomap-ilc:
-      command: "%{lookup('kekcc::storm.webdav.vomap.ilc.command')} > %{lookup('kekcc::storm.webdav.vomap.ilc.output')}"
-      minute: '12'
-      hour: '*/6'
-      date: '*'
-      month: '*'
-      weekday: '*'
-      user: root
-      environment:
-        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
-        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
-      description: Update VO Map File for ILC VO
-      require:
-        - Package[voms-admin-client]
-    update-vomap-dteam:
-      command: "%{lookup('kekcc::storm.webdav.vomap.dteam.command')} > %{lookup('kekcc::storm.webdav.vomap.dteam.output')}"
-      minute: '14'
-      hour: '*/6'
-      date: '*'
-      month: '*'
-      weekday: '*'
-      user: root
-      environment:
-        - "X509_USER_CERT=%{lookup('kekcc::storm.webdav.vomap.x509_user_cert')}"
-        - "X509_USER_KEY=%{lookup('kekcc::storm.webdav.vomap.x509_user_key')}"
-      description: Update VO Map File for dteam VO
       require:
         - Package[voms-admin-client]
   firewalld_custom_service:

@@ -22,7 +22,9 @@ kekcc::storm::backend:
       manage_path_authz_db: true  # (Boolean) — If true, allows to set content of path-authz.db file.
       path_authz_db_file: puppet:///modules/kekcc/etc/storm/backend-server/path-authz.db # (String) — If manage_path_authz_db is true, set the content from this source path
       storage_areas:
-        - name: belle-disk
+        # should not be hard-coded
+        # have to look up kekcc::storm.storage_areas?
+        - name: Lustre-for-Belle-II
           root_path: /storage/belle
           access_points:
             - /belle
