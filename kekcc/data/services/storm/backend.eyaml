@@ -13,7 +13,7 @@ kekcc::storm::backend:
       service_du_enabled: true
       fs_type: posixfs
       info_sitename: "%{lookup('kekcc::common.sitename')}"
-      info_storage_default_root: /tape
+      info_storage_default_root: /storage
       frontend_public_host: "%{alias('kekcc::storm.backend.frontend_public_host')}"
       lcmaps_debug_level: "%{alias('kekcc::storm.backend.lcmaps_debug_level')}"
       srm_pool_members: "%{alias('kekcc::storm.backend.srm_pool_members')}"
@@ -22,70 +22,22 @@ kekcc::storm::backend:
       manage_path_authz_db: true  # (Boolean) — If true, allows to set content of path-authz.db file.
       path_authz_db_file: puppet:///modules/kekcc/etc/storm/backend-server/path-authz.db # (String) — If manage_path_authz_db is true, set the content from this source path
       storage_areas:
-        - name: dteam-disk
-          root_path: /disk/dteam
-          access_points:
-            - /disk/dteam
-          vos:
-            - dteam
-            - belle
-          storage_class: T0D1
-          online_size: 40
-        - name: dteam-tape
-          root_path: /tape/dteam
-          access_points:
-            - /dteam
-          vos:
-            - dteam
-            - belle
-          storage_class: T1D1
-          online_size: 40
-          nearline_size: 80
         - name: belle-disk
-          root_path: /disk/belle
-          access_points:
-            - /disk/belle
-          vos:
-            - belle
-          space_token: BELLEDISK
-          storage_class: T0D1
-          online_size: 40
-        - name: belle-tape
-          root_path: /tape/belle
+          root_path: /storage/belle
           access_points:
             - /belle
           vos:
             - belle
           space_token: BELLE
-          storage_class: T1D1
-          online_size: 40
-          nearline_size: 80
-        - name: ilc-disk
-          root_path: /disk/ilc
-          access_points:
-            - /disk/ilc
-          vos:
-            - ilc
           storage_class: T0D1
-          online_size: 40
-        - name: ilc-tape
-          root_path: /tape/ilc
-          access_points:
-            - /ilc
-          vos:
-            - ilc
-          storage_class: T1D1
-          online_size: 40
-          nearline_size: 80
+          online_size: 1234
         - name: info
-          root_path: /tape/info
+          root_path: /storage/info
           access_points:
             - /info
-          online_size: 40
+          online_size: 10
           vos:
             - belle
-            - dteam
-            - ilc
       notify:
         - Service[storm-frontend-server]
       require:
@@ -93,12 +45,8 @@ kekcc::storm::backend:
         # - Class[storm::repo]
         # 20-Nov-2020 on UMD4
         - Package[umd-release]
-        - Storm::Sarootdir[/disk/belle]
-        - Storm::Sarootdir[/tape/belle]
-        - Storm::Sarootdir[/disk/ilc]
-        - Storm::Sarootdir[/tape/ilc]
-        - Storm::Sarootdir[/disk/dteam]
-        - Storm::Sarootdir[/tape/dteam]
+        - Storm::Sarootdir[/storage/belle]
+        - Storm::Sarootdir[/storage/info]
   file:
     "%{alias('kekcc::storm.backend.report.script')}":
       ensure: present
@@ -135,7 +83,7 @@ kekcc::storm::backend:
       logoutput: true
       require:
         - File[%{lookup('kekcc::storm.backend.report.script')}]
-        - Storm::Sarootdir[/tape/info]
+        - Storm::Sarootdir[/storage/info]
         - Class[storm::backend]
   file_line:
     add-rules-authz-database:
