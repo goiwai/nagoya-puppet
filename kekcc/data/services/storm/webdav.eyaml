@@ -30,10 +30,10 @@ kekcc::storm::webdav:
           access_points:
             # - /belle/info
             - /info
-          # authenticated_read_enabled: false
-          # anonymous_read_enabled: false
-          # vo_map_enabled: true
-          # vo_map_grants_write_permission: false
+          authenticated_read_enabled: true
+          anonymous_read_enabled: true
+          vo_map_enabled: false
+          vo_map_grants_write_permission: false
           # to make this area read-only access
           vos: []
       # http_port and https_port: the service ports. Default: 8085, 8443.
