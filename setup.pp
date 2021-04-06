@@ -1,58 +1,41 @@
 # change these variables below if needbe
 $files_prefix_dir = '/mnt/nagoya-puppet'
-$links_and_targets = {
-  '/etc/puppetlabs/code/modules/kekcc' => join([$files_prefix_dir, 'kekcc'], '/'),
-  '/etc/puppetlabs/puppet/keys' => join([$files_prefix_dir, 'keys'], '/'),
+
+package { 'puppet-agent':
+  ensure => installed,
 }
-$manifests = [
-  'grid-ui.pp',
-  'storm-all-in-one.pp',
-]
 
-$source_manifest_dir = join([$files_prefix_dir, 'manifests'], '/')
-$dest_manifest_dir = '/etc/puppetlabs/code/environments/production/manifests'
+file { '/etc/puppetlabs/code/modules/kekcc':
+  ensure  => link,
+  target  => join([$files_prefix_dir, 'kekcc'], '/'),
+  require => Package['puppet-agent'],
+}
 
-# '/etc/puppetlabs/code/environments/production/manifests/node.pp' => join([$files_prefix_dir, 'node.pp'], '/'),
-$module_metadata = join([$links_and_targets['/etc/puppetlabs/code/modules/kekcc'], 'metadata.json'], '/')
+file { '/etc/puppetlabs/puppet/keys':
+  ensure  => link,
+  target  => join([$files_prefix_dir, 'keys'], '/'),
+  require => Package['puppet-agent'],
+}
 
-if find_file($files_prefix_dir) {
-  $links_and_targets.each |String $link, String $target| {
-    if find_file($target) {
-      file { $link:
-        ensure => link,
-        target => $target,
-      }
-    } else {
-      fail("Not found: \$target=${target}")
-    }
-  }
-  $manifests.each |String $manifest| {
-    $source_file = join([$source_manifest_dir, $manifest], '/')
-    $dest_file = join([$dest_manifest_dir, $manifest], '/')
-    if find_file($source_file) {
-      file { $dest_file:
-        ensure => file,
-        source => "file://${source_file}",
-      }
-    } else {
-      fail("Not found: \$source_file=${source_file}")
-    }
-  }
-} else {
-  fail("Not found: \$files_prefix_dir=${files_prefix_dir}")
+file { '/etc/puppetlabs/code/environments/production/manifests/grid-ui.pp':
+  ensure  => file,
+  source  => join(['file://', join([$files_prefix_dir, 'manifests', 'grid-ui.pp'], '/')]),
+  require => Package['puppet-agent'],
+}
+
+file { '/etc/puppetlabs/code/environments/production/manifests/storm-all-in-one.pp':
+  ensure  => file,
+  source  => join(['file://', join([$files_prefix_dir, 'manifests', 'storm-all-in-one.pp'], '/')]),
+  require => Package['puppet-agent'],
 }
 
 # load_module_metadata() is a function of puppetlabs/stdlib
-$kekcc_metadata = json_data({path => $module_metadata}, Puppet::LookupContext(data_hash))
+$kekcc_metadata = json_data({path => join([$files_prefix_dir, 'kekcc', 'metadata.json'], '/')}, Puppet::LookupContext(data_hash))
 
 $kekcc_metadata['dependencies'].each |Hash $moddep| {
   $mod = regsubst($moddep['name'], '/', '-', 'G')
   # notice($mod)
-  $cmds = [
-    "puppet module install ${mod}",
-    "puppet module upgrade ${mod}",
-  ]
-  exec { $cmds:
+  exec { "puppet module install ${mod}":
     path      => [
       '/opt/puppetlabs/bin',
       '/usr/bin',
@@ -61,5 +44,31 @@ $kekcc_metadata['dependencies'].each |Hash $moddep| {
     ],
     provider  => shell,
     logoutput => true,
+    require   => [
+      File['/etc/puppetlabs/code/modules/kekcc'],
+      File['/etc/puppetlabs/puppet/keys'],
+      File['/etc/puppetlabs/code/environments/production/manifests/grid-ui.pp'],
+      File['/etc/puppetlabs/code/environments/production/manifests/storm-all-in-one.pp'],
+    ],
+  }
+}
+
+$kekcc_metadata['dependencies'].each |Hash $moddep| {
+  $mod = regsubst($moddep['name'], '/', '-', 'G')
+  exec { "puppet module upgrade ${mod}":
+    path      => [
+      '/opt/puppetlabs/bin',
+      '/usr/bin',
+      '/usr/sbin',
+      '/bin',
+    ],
+    provider  => shell,
+    logoutput => true,
+    unless    => [
+      "test ${mod} = \"puppetlabs-stdlib\"",
+    ],
+    require   => [
+      Exec["puppet module install ${mod}"],
+    ],
   }
 }

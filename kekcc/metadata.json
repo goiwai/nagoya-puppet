@@ -1,6 +1,6 @@
 {
   "name": "kekcc",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "author": "Go Iwai",
   "summary": "A collection of manifests for the configuration of Grid services at KEKCC",
   "license": "Apache-2.0",
@@ -8,6 +8,10 @@
   "project_page": "https://github.com/goiwai/nagoya-puppet",
   "issues_url": "https://github.com/goiwai/nagoya-puppet/issues",
   "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": "< 7.0.0"
+    },
     {
       "name": "cnafsd/storm",
       "version_requirement": ">= 3"
