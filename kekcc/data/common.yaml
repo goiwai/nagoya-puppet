@@ -8,11 +8,13 @@ kekcc::common:
     client:
       default_local:
         cvmfs_repositories: grid.cern.ch,atlas.cern.ch,sft.cern.ch,dirac.egi.eu,ilc.desy.de,belle.kek.jp,belle.cern.ch
-        # for KEK inside setup
+        # for KEK inside setup: kek2-htp0[1234].cc.kek.jp:1080/tcp (SOCKS proxy)
         # for outside, just comment out this line. Then, CVMFS_HTTP_PROXY goes DIRECT.
         cvmfs_http_proxy: http://kek2-htp01.cc.kek.jp|http://kek2-htp02.cc.kek.jp;http://kek2-htp03.cc.kek.jp|http://kek2-htp04.cc.kek.jp;DIRECT
         # yes/no treated as a boolean parameter in the yaml. to avoid this and treated as a string parameter, yes/no is quoted.
         cvmfs_use_geoapi: 'yes'
+        # Soft-limit of the cache in Megabyte.
+        cvmfs_quota_limit: 8000
   networking:
     # todo: to be a dynamic definition
     network: "%{facts.network}"
