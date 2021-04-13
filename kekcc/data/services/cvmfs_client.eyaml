@@ -4,10 +4,6 @@ kekcc::cvmfs_client:
       require:
         - Package[umd-release]
         - Package[epel-release]
-    # cvmfs-config-kek:
-    #   source: https://kekcc.kek.jp/service/kekcc/download/cvmfs-config-kek-latest.noarch.rpm
-    #   require:
-    #     - Package[cvmfs]
   file:
     /etc/cvmfs/default.local:
       ensure: file
@@ -16,24 +12,6 @@ kekcc::cvmfs_client:
         - kekcc::common.cvmfs.client.default_local
       require:
         - Package[cvmfs]
-    # /etc/cvmfs/keys/desy.de:
-    #   ensure: directory
-    #   require:
-    #     - Package[cvmfs]
-    # /etc/cvmfs/keys/desy.de/desy.de.pub:
-    #   ensure: file
-    #   source:
-    #     - puppet:///modules/kekcc/etc/cvmfs/keys/desy.de/desy.de.pub
-    #     - https://raw.githubusercontent.com/cvmfs-contrib/config-repo/master/etc/cvmfs/keys/desy.de/desy.de.pub
-    #   require:
-    #     - File[/etc/cvmfs/keys/desy.de]
-    # /etc/cvmfs/domain.d/desy.de.conf:
-    #   ensure: file
-    #   source:
-    #     - puppet:///modules/kekcc/etc/cvmfs/domain.d/desy.de.conf
-    #     - https://raw.githubusercontent.com/cvmfs-contrib/config-repo/master/etc/cvmfs/domain.d/desy.de.conf
-    #   require:
-    #     - Package[cvmfs]
   exec:
     cvmfs_config setup:
       path:
@@ -44,14 +22,8 @@ kekcc::cvmfs_client:
       logoutput: true
       subscribe:
         - File[/etc/cvmfs/default.local]
-        # - File[/etc/cvmfs/keys/desy.de/desy.de.pub]
-        # - File[/etc/cvmfs/domain.d/desy.de.conf]
-        # - Package[cvmfs-config-kek]
       require:
         - File[/etc/cvmfs/default.local]
-        # - File[/etc/cvmfs/keys/desy.de/desy.de.pub]
-        # - File[/etc/cvmfs/domain.d/desy.de.conf]
-        # - Package[cvmfs-config-kek]
     cvmfs_config probe:
       path:
         - /usr/bin
@@ -61,8 +33,5 @@ kekcc::cvmfs_client:
       logoutput: true
       subscribe:
         - File[/etc/cvmfs/default.local]
-        # - File[/etc/cvmfs/keys/desy.de/desy.de.pub]
-        # - File[/etc/cvmfs/domain.d/desy.de.conf]
-        # - Package[cvmfs-config-kek]
       require:
         - Exec[cvmfs_config setup] 
